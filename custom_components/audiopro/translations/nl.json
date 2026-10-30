@@ -1,0 +1,26 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Audio Pro-speaker",
+        "description": "Vul het vaste IP-adres van de speaker in. Er wordt geen auto-discovery gebruikt, dus de speaker mag in een ander subnet zitten.",
+        "data": { "host": "IP-adres" }
+      }
+    },
+    "error": { "cannot_connect": "Kan de speaker niet bereiken op https://<IP>/httpapi.asp." },
+    "abort": { "already_configured": "Deze speaker is al toegevoegd." }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Radiozenders",
+        "description": "Eén zender per regel, als `Naam | stream-URL`.",
+        "data": { "stations": "Zenders" }
+      }
+    },
+    "error": { "invalid_station": "Ongeldige regel: {line}" }
+  },
+  "entity": {
+    "select": { "station": { "name": "Radiozender" } }
+  }
+}
