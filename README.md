@@ -6,7 +6,7 @@ ander subnet / VLAN zit dan Home Assistant.
 
 ## Functies
 
-- **Media player**: afspelen, pauze, stop, vorige/volgende, volume, dempen
+- **Media player**: aan/uit, afspelen, pauze, stop, vorige/volgende, volume, dempen
 - **Bron kiezen**: Wi-Fi, Bluetooth, TV (HDMI), Optical, Line-in, Phono
 - **Equalizer** als *sound mode* (Flat, Bass Booster, Rock, …)
 - **Radiozenders**
@@ -21,7 +21,6 @@ Naast de media player krijg je losse entiteiten, handig voor dashboards en autom
 
 | Entiteit | Type | Wat |
 |---|---|---|
-| Volume | number | 0–100 % |
 | Dempen | switch | mute aan/uit |
 | Audiobron | select | Wi-Fi, Bluetooth, TV (HDMI), Optical, Line-in, Phono |
 | Radiozender | select | kies uit je eigen zenderlijst |
@@ -33,6 +32,10 @@ Naast de media player krijg je losse entiteiten, handig voor dashboards en autom
 | Wifi-signaal | sensor | RSSI in dBm |
 | Herstarten | button | speaker herstarten |
 | Preset *n* | button | presets die op de speaker zelf zijn opgeslagen (alleen als die er zijn) |
+
+De speaker heeft geen echte uit-stand via het netwerk. **Uit** stopt het afspelen
+(en schakelt een ingang als HDMI eerst naar Wi-Fi), waarna de speaker vanzelf in
+standby gaat. **Aan** start de laatste zender weer, of zet de vorige ingang terug.
 
 Vanaf Home Assistant 2026.3 toont de integratie een eigen icoon.
 

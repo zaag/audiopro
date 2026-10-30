@@ -1,4 +1,4 @@
-"""Number entities: volume, balance and sleep timer."""
+"""Number entities: balance and sleep timer."""
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
@@ -10,7 +10,7 @@ from homeassistant.components.number import (
     NumberEntityDescription,
     NumberMode,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTime
+from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -26,30 +26,12 @@ class AudioProNumberDescription(NumberEntityDescription):
     is_setting: bool = True
 
 
-def _volume(data: AudioProData) -> float | None:
-    vol = data.status.get("vol")
-    return int(vol) if vol not in (None, "") else None
-
-
 def _sleep_minutes(data: AudioProData) -> float | None:
     secs = data.settings.sleep_timer
     return None if secs is None else round(secs / 60)
 
 
 NUMBERS = (
-    AudioProNumberDescription(
-        key="volume",
-        translation_key="volume",
-        icon="mdi:volume-high",
-        native_min_value=0,
-        native_max_value=100,
-        native_step=1,
-        native_unit_of_measurement=PERCENTAGE,
-        mode=NumberMode.SLIDER,
-        value_fn=_volume,
-        set_fn=lambda api, v: api.set_volume(int(v)),
-        is_setting=False,
-    ),
     AudioProNumberDescription(
         key="balance",
         translation_key="balance",

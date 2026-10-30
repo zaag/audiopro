@@ -4,9 +4,11 @@ from __future__ import annotations
 from homeassistant.const import CONF_HOST, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AudioProApi, AudioProError
+from .const import DOMAIN
 from .coordinator import AudioProConfigEntry, AudioProCoordinator
 
 PLATFORMS = [
@@ -31,9 +33,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: AudioProConfigEntry) -> 
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 
+    _remove_old_entities(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     return True
+
+
+def _remove_old_entities(hass: HomeAssistant, entry: AudioProConfigEntry) -> None:
+    """Drop entities from earlier versions; volume lives on the media player."""
+    registry = er.async_get(hass)
+    for domain, key in ((Platform.NUMBER, "volume"),):
+        if entity_id := registry.async_get_entity_id(domain, DOMAIN, f"{entry.unique_id}_{key}"):
+            registry.async_remove(entity_id)
 
 
 async def _async_reload(hass: HomeAssistant, entry: AudioProConfigEntry) -> None:

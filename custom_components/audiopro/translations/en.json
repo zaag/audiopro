@@ -43,9 +43,6 @@
       }
     },
     "number": {
-      "volume": {
-        "name": "Volume"
-      },
       "balance": {
         "name": "Balance"
       },

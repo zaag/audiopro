@@ -17,6 +17,7 @@ from homeassistant.components.media_player import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .api import clean, decode_hex
 from .const import MODE_TO_SOURCE, SOURCES
@@ -40,7 +41,11 @@ async def async_setup_entry(
     async_add_entities([AudioProMediaPlayer(entry.runtime_data)])
 
 
-class AudioProMediaPlayer(AudioProEntity, MediaPlayerEntity):
+class AudioProMediaPlayer(AudioProEntity, MediaPlayerEntity, RestoreEntity):
+    """There is no network power-off on these speakers, so "off" is emulated:
+    turning off stops playback (the speaker then goes to standby by itself),
+    turning on resumes the last station or input."""
+
     _attr_name = None
     _attr_media_content_type = MediaType.MUSIC
     _attr_source_list = list(SOURCES.values())
@@ -56,10 +61,15 @@ class AudioProMediaPlayer(AudioProEntity, MediaPlayerEntity):
         | MediaPlayerEntityFeature.SELECT_SOURCE
         | MediaPlayerEntityFeature.PLAY_MEDIA
         | MediaPlayerEntityFeature.BROWSE_MEDIA
+        | MediaPlayerEntityFeature.TURN_ON
+        | MediaPlayerEntityFeature.TURN_OFF
     )
 
     def __init__(self, coordinator: AudioProCoordinator) -> None:
         super().__init__(coordinator, "media_player")
+        self._off = False
+        # Input (e.g. HDMI) that was active when turned off, restored on turn on.
+        self._source_before_off: str | None = None
         if coordinator.eq_list:
             self._attr_sound_mode_list = coordinator.eq_list
             self._attr_supported_features |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
@@ -74,7 +84,45 @@ class AudioProMediaPlayer(AudioProEntity, MediaPlayerEntity):
 
     @property
     def state(self) -> MediaPlayerState:
+        if self._off:
+            return MediaPlayerState.OFF
         return STATE_MAP.get(self._status.get("status", ""), MediaPlayerState.ON)
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        if (last := await self.async_get_last_state()) is not None:
+            self._off = last.state == MediaPlayerState.OFF
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        # Something started playing (app, AirPlay, Spotify, ...): we're on again.
+        if self._off and self._status.get("status") in ("play", "load"):
+            self._off = False
+        super()._handle_coordinator_update()
+
+    async def async_turn_off(self) -> None:
+        source = MODE_TO_SOURCE.get(str(self._status.get("mode")))
+        if source and source != "wifi":
+            # Stopping doesn't silence an input; switch to network first.
+            self._source_before_off = source
+            await self.async_run(self.coordinator.api.switch_source("wifi"))
+        await self.async_run(self.coordinator.api.player_cmd("stop"))
+        self._off = True
+        self.async_write_ha_state()
+
+    async def async_turn_on(self) -> None:
+        self._off = False
+        self.async_write_ha_state()
+        if self._source_before_off:
+            source, self._source_before_off = self._source_before_off, None
+            await self.async_run(self.coordinator.api.switch_source(source))
+            return
+        station = self.current_station or self.coordinator.station_for_url(
+            self.coordinator.last_url
+        ) or (self.coordinator.stations[0] if self.coordinator.stations else None)
+        if station:
+            self.coordinator.last_url = station["url"]
+            await self.async_run(self.coordinator.api.play_url(station["url"]))
 
     @property
     def volume_level(self) -> float | None:
