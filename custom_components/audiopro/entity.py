@@ -1,10 +1,13 @@
 """Base entity for Audio Pro."""
 from __future__ import annotations
 
+from collections.abc import Awaitable
+
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC, DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .api import clean, decode_hex
+from .api import AudioProError, clean, decode_hex
 from .const import DOMAIN, VENDOR_URL
 from .coordinator import AudioProCoordinator
 
@@ -26,6 +29,17 @@ class AudioProEntity(CoordinatorEntity[AudioProCoordinator]):
             sw_version=info.get("firmware"),
             configuration_url=f"https://{coordinator.api.host}",
         )
+
+    async def async_run(self, command: Awaitable[None], settings: bool = False) -> None:
+        """Send a command, then refresh; settings=True also re-reads the settings."""
+        try:
+            await command
+        except AudioProError as err:
+            raise HomeAssistantError(str(err)) from err
+        if settings:
+            await self.coordinator.async_refresh_settings()
+        else:
+            await self.coordinator.async_request_refresh()
 
     @property
     def stream_url(self) -> str | None:

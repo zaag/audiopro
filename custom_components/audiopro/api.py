@@ -101,3 +101,47 @@ class AudioProApi:
 
     async def load_eq(self, name: str) -> None:
         await self.request(f"EQLoad:{name}")
+
+    async def get_eq_state(self) -> dict[str, Any]:
+        """Active EQ preset name and on/off state, from EQGetBand."""
+        try:
+            data = await self.request("EQGetBand")
+        except AudioProError:
+            return {}
+        return data if isinstance(data, dict) else {}
+
+    async def set_eq_enabled(self, enabled: bool) -> None:
+        await self.request("EQOn" if enabled else "EQOff")
+
+    async def get_balance(self) -> float:
+        return float(await self.request("getChannelBalance"))
+
+    async def set_balance(self, balance: float) -> None:
+        """Balance from -1.0 (left) to 1.0 (right)."""
+        await self.request(f"setChannelBalance:{round(max(-1.0, min(1.0, balance)), 2):g}")
+
+    async def get_led(self) -> bool:
+        return str(await self.request("LED_SWITCH_GET")) == "1"
+
+    async def set_led(self, on: bool) -> None:
+        await self.request(f"LED_SWITCH_SET:{int(on)}")
+
+    async def get_sleep_timer(self) -> int:
+        """Seconds until the speaker goes to standby, 0 when no timer is set."""
+        return int(await self.request("getShutdown"))
+
+    async def set_sleep_timer(self, seconds: int) -> None:
+        await self.request(f"setShutdown:{seconds if seconds > 0 else -1}")
+
+    async def get_presets(self) -> list[dict[str, Any]]:
+        try:
+            data = await self.request("getPresetInfo")
+        except AudioProError:
+            return []
+        return data.get("preset_list", []) if isinstance(data, dict) else []
+
+    async def play_preset(self, number: int) -> None:
+        await self.request(f"MCUKeyShortClick:{number}")
+
+    async def reboot(self) -> None:
+        await self.request("reboot")

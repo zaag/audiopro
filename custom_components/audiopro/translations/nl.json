@@ -4,23 +4,75 @@
       "user": {
         "title": "Audio Pro-speaker",
         "description": "Vul het vaste IP-adres van de speaker in. Er wordt geen auto-discovery gebruikt, dus de speaker mag in een ander subnet zitten.",
-        "data": { "host": "IP-adres" }
+        "data": {
+          "host": "IP-adres"
+        }
       }
     },
-    "error": { "cannot_connect": "Kan de speaker niet bereiken op https://<IP>/httpapi.asp." },
-    "abort": { "already_configured": "Deze speaker is al toegevoegd." }
+    "error": {
+      "cannot_connect": "Kan de speaker niet bereiken op https://<IP>/httpapi.asp."
+    },
+    "abort": {
+      "already_configured": "Deze speaker is al toegevoegd."
+    }
   },
   "options": {
     "step": {
       "init": {
         "title": "Radiozenders",
         "description": "Eén zender per regel, als `Naam | stream-URL`.",
-        "data": { "stations": "Zenders" }
+        "data": {
+          "stations": "Zenders"
+        }
       }
     },
-    "error": { "invalid_station": "Ongeldige regel: {line}" }
+    "error": {
+      "invalid_station": "Ongeldige regel: {line}"
+    }
   },
   "entity": {
-    "select": { "station": { "name": "Radiozender" } }
+    "select": {
+      "station": {
+        "name": "Radiozender"
+      },
+      "source": {
+        "name": "Audiobron"
+      },
+      "equalizer_preset": {
+        "name": "Equalizer-preset"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Volume"
+      },
+      "balance": {
+        "name": "Balans"
+      },
+      "sleep_timer": {
+        "name": "Slaaptimer"
+      }
+    },
+    "switch": {
+      "mute": {
+        "name": "Dempen"
+      },
+      "equalizer": {
+        "name": "Equalizer"
+      },
+      "led": {
+        "name": "Status-LED"
+      }
+    },
+    "sensor": {
+      "wifi_signal": {
+        "name": "Wifi-signaal"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Herstarten"
+      }
+    }
   }
 }

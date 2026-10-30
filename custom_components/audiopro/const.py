@@ -6,6 +6,10 @@ CONF_STATIONS = "stations"
 
 SCAN_INTERVAL_SECONDS = 5
 
+# Settings (EQ, balance, LED, sleep timer, wifi signal, presets) are polled every
+# SETTINGS_EVERY_N_POLLS * SCAN_INTERVAL_SECONDS seconds.
+SETTINGS_EVERY_N_POLLS = 6
+
 # switchmode argument -> label shown in Home Assistant
 SOURCES = {
     "wifi": "Wi-Fi",

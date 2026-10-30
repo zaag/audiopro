@@ -4,23 +4,75 @@
       "user": {
         "title": "Audio Pro speaker",
         "description": "Enter the fixed IP address of the speaker. Discovery is not used, so the speaker may be on another subnet.",
-        "data": { "host": "IP address" }
+        "data": {
+          "host": "IP address"
+        }
       }
     },
-    "error": { "cannot_connect": "Cannot reach the speaker on https://<IP>/httpapi.asp." },
-    "abort": { "already_configured": "This speaker is already configured." }
+    "error": {
+      "cannot_connect": "Cannot reach the speaker on https://<IP>/httpapi.asp."
+    },
+    "abort": {
+      "already_configured": "This speaker is already configured."
+    }
   },
   "options": {
     "step": {
       "init": {
         "title": "Radio stations",
         "description": "One station per line, as `Name | stream URL`.",
-        "data": { "stations": "Stations" }
+        "data": {
+          "stations": "Stations"
+        }
       }
     },
-    "error": { "invalid_station": "Invalid line: {line}" }
+    "error": {
+      "invalid_station": "Invalid line: {line}"
+    }
   },
   "entity": {
-    "select": { "station": { "name": "Radio station" } }
+    "select": {
+      "station": {
+        "name": "Radio station"
+      },
+      "source": {
+        "name": "Audio source"
+      },
+      "equalizer_preset": {
+        "name": "Equalizer preset"
+      }
+    },
+    "number": {
+      "volume": {
+        "name": "Volume"
+      },
+      "balance": {
+        "name": "Balance"
+      },
+      "sleep_timer": {
+        "name": "Sleep timer"
+      }
+    },
+    "switch": {
+      "mute": {
+        "name": "Mute"
+      },
+      "equalizer": {
+        "name": "Equalizer"
+      },
+      "led": {
+        "name": "Status LED"
+      }
+    },
+    "sensor": {
+      "wifi_signal": {
+        "name": "Wi-Fi signal"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Reboot"
+      }
+    }
   }
 }

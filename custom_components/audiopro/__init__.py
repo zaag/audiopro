@@ -9,7 +9,14 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import AudioProApi, AudioProError
 from .coordinator import AudioProConfigEntry, AudioProCoordinator
 
-PLATFORMS = [Platform.MEDIA_PLAYER, Platform.SELECT]
+PLATFORMS = [
+    Platform.BUTTON,
+    Platform.MEDIA_PLAYER,
+    Platform.NUMBER,
+    Platform.SELECT,
+    Platform.SENSOR,
+    Platform.SWITCH,
+]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: AudioProConfigEntry) -> bool:

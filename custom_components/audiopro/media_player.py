@@ -18,7 +18,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .api import AudioProError, clean, decode_hex
+from .api import clean, decode_hex
 from .const import MODE_TO_SOURCE, SOURCES
 from .coordinator import AudioProConfigEntry, AudioProCoordinator
 from .entity import AudioProEntity
@@ -60,7 +60,6 @@ class AudioProMediaPlayer(AudioProEntity, MediaPlayerEntity):
 
     def __init__(self, coordinator: AudioProCoordinator) -> None:
         super().__init__(coordinator, "media_player")
-        self._eq: str | None = None
         if coordinator.eq_list:
             self._attr_sound_mode_list = coordinator.eq_list
             self._attr_supported_features |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
@@ -93,12 +92,7 @@ class AudioProMediaPlayer(AudioProEntity, MediaPlayerEntity):
 
     @property
     def sound_mode(self) -> str | None:
-        if self._eq:
-            return self._eq
-        try:
-            return self.coordinator.eq_list[int(self._status.get("eq", ""))]
-        except (ValueError, IndexError):
-            return None
+        return self.coordinator.data.settings.eq.get("Name")
 
     @property
     def media_title(self) -> str | None:
@@ -146,49 +140,40 @@ class AudioProMediaPlayer(AudioProEntity, MediaPlayerEntity):
             if v
         }
 
-    async def _run(self, coro) -> None:
-        try:
-            await coro
-        except AudioProError as err:
-            raise HomeAssistantError(str(err)) from err
-        await self.coordinator.async_request_refresh()
-
     async def async_media_play(self) -> None:
         if self._status.get("status") == "pause":
-            await self._run(self.coordinator.api.player_cmd("resume"))
+            await self.async_run(self.coordinator.api.player_cmd("resume"))
         elif self.coordinator.last_url and self.source == SOURCES["wifi"]:
-            await self._run(self.coordinator.api.play_url(self.coordinator.last_url))
+            await self.async_run(self.coordinator.api.play_url(self.coordinator.last_url))
         else:
-            await self._run(self.coordinator.api.player_cmd("resume"))
+            await self.async_run(self.coordinator.api.player_cmd("resume"))
 
     async def async_media_pause(self) -> None:
-        await self._run(self.coordinator.api.player_cmd("pause"))
+        await self.async_run(self.coordinator.api.player_cmd("pause"))
 
     async def async_media_stop(self) -> None:
-        await self._run(self.coordinator.api.player_cmd("stop"))
+        await self.async_run(self.coordinator.api.player_cmd("stop"))
 
     async def async_media_next_track(self) -> None:
-        await self._run(self.coordinator.api.player_cmd("next"))
+        await self.async_run(self.coordinator.api.player_cmd("next"))
 
     async def async_media_previous_track(self) -> None:
-        await self._run(self.coordinator.api.player_cmd("prev"))
+        await self.async_run(self.coordinator.api.player_cmd("prev"))
 
     async def async_set_volume_level(self, volume: float) -> None:
-        await self._run(self.coordinator.api.set_volume(round(volume * 100)))
+        await self.async_run(self.coordinator.api.set_volume(round(volume * 100)))
 
     async def async_mute_volume(self, mute: bool) -> None:
-        await self._run(self.coordinator.api.set_mute(mute))
+        await self.async_run(self.coordinator.api.set_mute(mute))
 
     async def async_select_source(self, source: str) -> None:
         key = next((k for k, v in SOURCES.items() if v == source), None)
         if key is None:
             raise HomeAssistantError(f"Unknown source: {source}")
-        await self._run(self.coordinator.api.switch_source(key))
+        await self.async_run(self.coordinator.api.switch_source(key))
 
     async def async_select_sound_mode(self, sound_mode: str) -> None:
-        await self._run(self.coordinator.api.load_eq(sound_mode))
-        self._eq = sound_mode
-        self.async_write_ha_state()
+        await self.async_run(self.coordinator.api.load_eq(sound_mode), settings=True)
 
     async def async_play_media(self, media_type: str, media_id: str, **kwargs: Any) -> None:
         if media_source.is_media_source_id(media_id):
@@ -196,7 +181,7 @@ class AudioProMediaPlayer(AudioProEntity, MediaPlayerEntity):
             media_id = item.url
         url = async_process_play_media_url(self.hass, media_id)
         self.coordinator.last_url = url
-        await self._run(self.coordinator.api.play_url(url))
+        await self.async_run(self.coordinator.api.play_url(url))
 
     async def async_browse_media(
         self, media_content_type: str | None = None, media_content_id: str | None = None

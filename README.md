@@ -17,6 +17,25 @@ ander subnet / VLAN zit dan Home Assistant.
     (als je die hebt toegevoegd) met duizenden zenders
 - `media_player.play_media` met een willekeurige stream-URL
 
+Naast de media player krijg je losse entiteiten, handig voor dashboards en automatiseringen:
+
+| Entiteit | Type | Wat |
+|---|---|---|
+| Volume | number | 0–100 % |
+| Dempen | switch | mute aan/uit |
+| Audiobron | select | Wi-Fi, Bluetooth, TV (HDMI), Optical, Line-in, Phono |
+| Radiozender | select | kies uit je eigen zenderlijst |
+| Equalizer-preset | select | Flat, Movie, Rock, … |
+| Equalizer | switch | EQ aan/uit |
+| Balans | number | −1 (links) tot 1 (rechts) |
+| Slaaptimer | number | minuten tot standby, 0 = uit |
+| Status-LED | switch | lampje op de speaker aan/uit |
+| Wifi-signaal | sensor | RSSI in dBm |
+| Herstarten | button | speaker herstarten |
+| Preset *n* | button | presets die op de speaker zelf zijn opgeslagen (alleen als die er zijn) |
+
+Vanaf Home Assistant 2026.3 toont de integratie een eigen icoon.
+
 ## Installatie via HACS
 
 1. HACS → menu (⋮) → **Custom repositories**
